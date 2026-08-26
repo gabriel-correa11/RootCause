@@ -1,0 +1,3 @@
+C:/Users/gabri/Documents/Development/rootcauze/rootcauze1/out/build/x64-debug/CMakeFiles/rootcauze1.dir
+C:/Users/gabri/Documents/Development/rootcauze/rootcauze1/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/gabri/Documents/Development/rootcauze/rootcauze1/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
