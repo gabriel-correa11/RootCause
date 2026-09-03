@@ -38,6 +38,11 @@ PDH_HCOUNTER AddPDHCounter(PDH_HQUERY query, const char* counterPath)
 	PdhAddCounterA(query, counterPath, NULL, &counter);
 	return counter;
 }
+PDH_HCOUNTER AddPDHCounter(PDH_HQUERY query, const PWSTR counterPath) {
+	PDH_HCOUNTER counter;
+	PdhAddCounterW(query, counterPath, NULL, &counter);
+	return counter;
+}
 PDH_FMT_COUNTERVALUE GetPDHCounterValue(PDH_HCOUNTER counter)
 {
 	PDH_FMT_COUNTERVALUE counterValue;
@@ -85,7 +90,15 @@ std::vector<ProcessInfo> collectProcesses() {
 	PdhExpandCounterPathW(L"\\Process(*)\\% Processor Time", NULL, &bufferSize );
 	PWSTR paths = (PWSTR)malloc(bufferSize * sizeof(WCHAR));
 	PdhExpandCounterPathW(L"\\Process(*)\\% Processor Time", paths, &bufferSize );
-
+	PWSTR EndOfPaths = paths + bufferSize;
+	PDH_HQUERY query;
+	PdhOpenQueryA(NULL, NULL, &query);
+	for (PWSTR p = paths; ((p != EndOfPaths) && (*p != L'\0')); p += wcslen(p) + 1) {
+		AddPDHCounterW(query, p);  
+	}
+	PdhCollectQueryData(query);
+	Sleep(1000);
+	PdhCollectQueryData(query);
 	while (bProcess) {
 		HANDLE processHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processList.th32ProcessID);
 		if (processHandle == NULL)
