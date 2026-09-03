@@ -1,8 +1,9 @@
-.vs/ 
-x64/ 
-Debug/ 
-Release/ 
-*.user 
-*.exe 
-*.obj 
+build/
 out/
+.vs/
+x64/
+Debug/
+Release/
+*.exe
+*.obj
+*.user

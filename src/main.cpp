@@ -38,7 +38,7 @@ PDH_HCOUNTER AddPDHCounter(PDH_HQUERY query, const char* counterPath)
 	PdhAddCounterA(query, counterPath, NULL, &counter);
 	return counter;
 }
-PDH_HCOUNTER AddPDHCounter(PDH_HQUERY query, const PWSTR counterPath) {
+PDH_HCOUNTER AddPDHCounterW(PDH_HQUERY query, const PWSTR counterPath) {
 	PDH_HCOUNTER counter;
 	PdhAddCounterW(query, counterPath, NULL, &counter);
 	return counter;
