@@ -34,3 +34,23 @@ std::vector<ProcessInfo> CollectProcesses() {
 			continue;
 
 		}
+		PROCESS_MEMORY_COUNTERS pmc;
+		GetProcessMemoryInfo(processHandle, &pmc, sizeof(pmc));
+		CloseHandle(processHandle);
+		ProcessInfo p;
+		p.name = processList.szExeFile;
+		p.pid = processList.th32ProcessID;
+		p.parentPid = processList.th32ParentProcessID;
+		p.ramMB = pmc.WorkingSetSize / (1024 * 1024);
+		p.cpuUsagePercent = 0.0;
+		p.hardPageFaultsPerSec = 0.0;
+		p.ioBytesTotal = 0;
+		processes.push_back(p);
+		bProcess = Process32Next(sniffer, &processList);
+
+	}
+	CloseHandle(sniffer);
+	free(paths);
+	PdhCloseQuery(query);
+	return processes;
+}

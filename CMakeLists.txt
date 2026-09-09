@@ -3,6 +3,11 @@ project(rootcauze)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(rootcauze src/main.cpp)
+add_executable(rootcauze 
+    src/main.cpp
+    src/PDHCollector.cpp
+    src/ProcessMonitor.cpp
+    src/Diagnostics.cpp
+)
 
 target_link_libraries(rootcauze PRIVATE ws2_32 psapi ${PD_LIBRARIES})
