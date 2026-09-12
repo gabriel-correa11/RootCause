@@ -169,27 +169,6 @@ The v1.0 diagnostic core includes global counter collection, process enumeration
 - **Unvalidated diagnostic accuracy:** no automated test suite or representative workload benchmark is included. Aggregate counters can hide differences between individual disks or processors.
 
 `NO_ANOMALY_DETECTED` means that none of the implemented conditions triggered. It does not establish that the system is healthy or that the sample data is valid.
-
-## Future roadmap
-
-### v1.5 — Per-process telemetry and attribution
-
-- Complete CPU, page-fault, and I/O counter value collection.
-- Match counter instances to processes reliably, including duplicate executable names and process exits.
-- Verify units and CPU normalization before comparing process and system measurements.
-- Apply RAM sorting and introduce process isolation and attribution rules.
-- Validate the rules with controlled CPU, memory, and disk workloads and improve collection error handling.
-
-### v2 — Monitoring and reporting
-
-- Add continuous sampling and a history buffer.
-- Export measurements and diagnoses as JSON or CSV.
-- Generate HTML reports and develop a dashboard or desktop interface.
-- Add thermal diagnostics using an additional source, such as WMI or hardware/vendor APIs; the present PDH counters do not provide the required thermal data.
-- Validate release builds and runtime requirements for portable distribution.
-
-These version labels describe planned development scope, not release dates or completed releases.
-
 ## References
 
 - [Collecting Performance Data — Microsoft Learn](https://learn.microsoft.com/en-us/windows/win32/perfctrs/collecting-performance-data): two-sample collection, sampling interval, and process counter interpretation.
