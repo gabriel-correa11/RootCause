@@ -12,16 +12,84 @@ std::vector<ProcessInfo> CollectProcesses() {
 	processList.dwSize = sizeof(PROCESSENTRY32);
 	BOOL bProcess = Process32First(sniffer, &processList);
 	std::vector<ProcessInfo> processes;
-	DWORD bufferSize = 0;
-	PdhExpandCounterPathW(L"\\Process(*)\\% Processor Time", NULL, &bufferSize);
-	PWSTR paths = (PWSTR)malloc(bufferSize * sizeof(WCHAR));
-	PdhExpandCounterPathW(L"\\Process(*)\\% Processor Time", paths, &bufferSize);
-	PWSTR EndOfPaths = paths + bufferSize;
+	DWORD bufferSizeCPU = 0;
+	PdhExpandCounterPathW(L"\\Process(*)\\% Processor Time", NULL, &bufferSizeCPU);
+	PWSTR pathsCPU = (PWSTR)malloc(bufferSizeCPU * sizeof(WCHAR));
+	PdhExpandCounterPathW(L"\\Process(*)\\% Processor Time", pathsCPU, &bufferSizeCPU);
+	DWORD bufferSizeFaults = 0;
+	PdhExpandCounterPathW(L"\\Process(*)\\Page Faults/sec", NULL, &bufferSizeFaults);
+	PWSTR pathsFaults = (PWSTR)malloc(bufferSizeFaults * sizeof(WCHAR));
+	PdhExpandCounterPathW(L"\\Process(*)\\Page Faults/sec", pathsFaults, &bufferSizeFaults);
+	DWORD bufferSizeIO = 0;
+	PdhExpandCounterPathW(L"\\Process(*)\\IO Data Bytes/sec", NULL, &bufferSizeIO);
+	PWSTR pathsIO = (PWSTR)malloc(bufferSizeIO * sizeof(WCHAR));
+	PdhExpandCounterPathW(L"\\Process(*)\\IO Data Bytes/sec", pathsIO, &bufferSizeIO);
+	PWSTR EndOfPathsCPU = pathsCPU + bufferSizeCPU;
+	PWSTR EndOfPathsFaults = pathsFaults + bufferSizeFaults;
+	PWSTR EndOfPathsIO = pathsIO + bufferSizeIO;
+
+	struct CounterInfo
+	{
+		PDH_HCOUNTER handle;
+		std::string processName;
+	};
+
 	PDH_HQUERY query;
+	std::vector<CounterInfo> cpucounters;
+	std::vector<CounterInfo> faultscounters;
+	std::vector<CounterInfo> iocounters;
+
 	PdhOpenQueryA(NULL, NULL, &query);
-	for (PWSTR p = paths; ((p != EndOfPaths) && (*p != L'\0')); p += wcslen(p) + 1) {
-		AddPDHCounterW(query, p);
+
+	for (PWSTR p = pathsCPU; p < EndOfPathsCPU; p += wcslen(p) + 1) {
+		PDH_HCOUNTER handle = AddPDHCounterW(query, p);
+
+		int len = WideCharToMultiByte(CP_UTF8, 0, p, -1, NULL, 0, NULL, NULL);
+		std::string path(len - 1, 0);
+		WideCharToMultiByte(CP_UTF8, 0, p, -1, &path[0], len, NULL, NULL);
+
+		size_t start = path.find('(') + 1;
+		size_t end = path.find(')');
+		std::string processName = path.substr(start, end - start);
+
+		CounterInfo info;
+		info.handle = handle;
+		info.processName = processName;
+		cpucounters.push_back(info);
 	}
+
+	for (PWSTR p = pathsFaults; p < EndOfPathsFaults; p += wcslen(p) + 1) {
+		PDH_HCOUNTER handle = AddPDHCounterW(query, p);
+		int len = WideCharToMultiByte(CP_UTF8, 0, p, -1, NULL, 0, NULL, NULL);
+		std::string path(len - 1, 0);
+		WideCharToMultiByte(CP_UTF8, 0, p, -1, &path[0], len, NULL, NULL);
+
+		size_t start = path.find('(') + 1;
+		size_t end = path.find(')');
+		std::string processName = path.substr(start, end - start);
+
+		CounterInfo info;
+		info.handle = handle;
+		info.processName = processName;
+		iocounters.push_back(info);
+	}
+
+	for (PWSTR p = pathsIO; p < EndOfPathsIO; p += wcslen(p) + 1) {
+		PDH_HCOUNTER handle = AddPDHCounterW(query, p);
+		int len = WideCharToMultiByte(CP_UTF8, 0, p, -1, NULL, 0, NULL, NULL);
+		std::string path(len - 1, 0);
+		WideCharToMultiByte(CP_UTF8, 0, p, -1, &path[0], len, NULL, NULL);
+
+		size_t start = path.find('(') + 1;
+		size_t end = path.find(')');
+		std::string processName = path.substr(start, end - start);
+
+		CounterInfo info;
+		info.handle = handle;
+		info.processName = processName;
+		faultscounters.push_back(info);
+	}
+
 	PdhCollectQueryData(query);
 	Sleep(1000);
 	PdhCollectQueryData(query);
@@ -50,7 +118,9 @@ std::vector<ProcessInfo> CollectProcesses() {
 
 	}
 	CloseHandle(sniffer);
-	free(paths);
+	free(pathsCPU);
+	free(pathsFaults);
+	free(pathsIO);
 	PdhCloseQuery(query);
 	return processes;
 }
